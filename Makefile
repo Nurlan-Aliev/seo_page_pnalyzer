@@ -7,5 +7,3 @@ start:
 
 link:
 	poetry run flake8
-
-
