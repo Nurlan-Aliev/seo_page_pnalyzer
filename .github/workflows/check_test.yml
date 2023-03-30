@@ -16,5 +16,4 @@ jobs:
           python-version: 3.8
 
       - name: Run linter
-        run: |
-          make link
+        run: make link
