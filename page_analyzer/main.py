@@ -1,6 +1,6 @@
 import psycopg2
 import os
-from datetime import datetime
+from datetime import date
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 
@@ -18,16 +18,20 @@ def create_table():
         cur.execute('''CREATE TABLE urls (
         id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
         name VARCHAR(255) UNIQUE,
-        created_at TIMESTAMP);''')
+        created_at DATE);''')
         conn.commit()
 
 
 def add_site(site):
     normalize = urlparse(site)
     home_page = f'{normalize.scheme}://{normalize.netloc}'
+    created_at = date.today()
+    print(created_at)
     with conn.cursor() as cur:
-        cur.execute('INSERT INTO urls (name, created_at) VALUES (%s, %s);', (home_page, datetime.now()))
+        cur.execute('INSERT INTO urls (name, created_at) VALUES (%s, %s);',
+                    (home_page, created_at))
         conn.commit()
+        print(date.today())
 
 
 def find_id(site):
@@ -36,11 +40,21 @@ def find_id(site):
     with conn.cursor() as cur:
         cur.execute("SELECT id FROM urls WHERE name = %s;", (home_page,))
         id = cur.fetchone()
+    if id:
+        return id[0]
     return id
 
 
-def find_name(id):
+def find_site(id):
     with conn.cursor() as cur:
-        cur.execute("SELECT name FROM urls WHERE id = %s;", (id,))
-        name = cur.fetchone()
-    return name
+        cur.execute("SELECT * FROM urls WHERE id = %s;", (id,))
+        site = cur.fetchone()
+    return site
+
+
+def select_all():
+    with conn.cursor() as cur:
+        cur.execute("SELECT * FROM urls")
+        table = cur.fetchall()
+
+    return table

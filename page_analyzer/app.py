@@ -1,9 +1,8 @@
 import os
-
 from flask import (Flask, url_for,
                    render_template, get_flashed_messages,
                    request, redirect, flash)
-from page_analyzer.main import add_site, create_table, find_id, find_name
+from page_analyzer.main import add_site, find_id, find_site, select_all
 from dotenv import load_dotenv
 from validators.url import url
 
@@ -13,7 +12,6 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-# create_table()
 
 
 @app.route('/')
@@ -24,7 +22,8 @@ def link():
 
 @app.get('/urls')
 def get_urls():
-    return render_template('urls.html')
+    table = select_all()
+    return render_template('urls.html', table=table)
 
 
 @app.post('/urls')
@@ -44,10 +43,10 @@ def post_urls():
             add_site(site)
             flash('Страница успешно добавлена', 'success')
             id = find_id(site)
-            return redirect(f'/urls/<{id[0]}>')
+            return redirect(f'/urls/{id}')
         else:
             flash('Страница уже существует', 'info')
-            return redirect(f'/urls/<{id[0]}>')
+            return redirect(f'/urls/{id}')
 
     else:
         flash('URL превышает 255 символов', 'error')
@@ -56,7 +55,6 @@ def post_urls():
 
 @app.route('/urls/<id>')
 def urls_id(id):
-    id = id[1]
     messages = get_flashed_messages(with_categories=True)
-    name = find_name(id)[0]
-    return render_template('urls_id.html', messages=messages, name=name)
+    site = find_site(id)
+    return render_template('urls_id.html', messages=messages, site=site)

@@ -3,4 +3,4 @@ DROP TABLE IF EXISTS urls;
 CREATE TABLE urls (
 id INTEGER PRIMARY KEY,
 name VARCHAR(255) UNIQUE,
-created_at TIMESTAMP);
+created_at DATE);
