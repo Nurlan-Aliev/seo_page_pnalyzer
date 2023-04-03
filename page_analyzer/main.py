@@ -20,6 +20,7 @@ def create_table():
         name VARCHAR(255) UNIQUE,
         created_at DATE);''')
         conn.commit()
+        return 'have a table site'
 
 
 def add_site(site):
