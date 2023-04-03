@@ -2,7 +2,8 @@ import os
 from flask import (Flask, url_for,
                    render_template, get_flashed_messages,
                    request, redirect, flash, session)
-from page_analyzer.main import add_site, create_table, find_id, find_site, select_all
+from page_analyzer.main import (add_site, create_table,
+                                find_id, find_site, select_all)
 from dotenv import load_dotenv
 from validators.url import url
 
