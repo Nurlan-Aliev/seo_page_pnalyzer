@@ -33,17 +33,20 @@
                                 <th>Последняя проверка</th>
                                 <th>Код ответа</th>
                             </tr>
-                            {% for i in table %}
+                            {% for site in table %}
                             <tr>
 
-                                <td>{{ i[0] }}</td>
-                                <td>
-                                <a href="/urls/{{ i[0] }}">
-                                    {{ i[1] }}
-                                </a>
-                                </td>
-                                <td></td>
-                                <td></td>
+                                <td>{{ site[0] }}</td>
+                                <td><a href="/urls/{{ site[0] }}">{{ site[1] }}</a></td>
+                                {% if select_from_check(site[0]) != [] %}
+                                    <td>{{ select_from_check(site[0])[-1][-1] }}</td>
+                                    <td></td>
+                                {% endif %}
+                                {% if select_from_check(site[0]) == [] %}
+                                    <td></td>
+                                    <td></td>
+                                {% endif %}
+
                             </tr>
                         {% endfor %}
                         </tbody>
