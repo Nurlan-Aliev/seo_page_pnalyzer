@@ -22,7 +22,6 @@ with psycopg2.connect(DATABASE_URL) as conn:
             created_at DATE);''')
             conn.commit()
 
-
     def add_site(site):
         normalize = urlparse(site)
         home_page = f'{normalize.scheme}://{normalize.netloc}'
@@ -31,7 +30,6 @@ with psycopg2.connect(DATABASE_URL) as conn:
             cur.execute('INSERT INTO urls (name, created_at) VALUES (%s, %s);',
                         (home_page, created_at))
             conn.commit()
-
 
     def find_id(site):
         normalize = urlparse(site)
@@ -43,13 +41,11 @@ with psycopg2.connect(DATABASE_URL) as conn:
             return id[0]
         return id
 
-
     def find_site(id):
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM urls WHERE id = %s;", (id,))
             site = cur.fetchone()
         return site
-
 
     def select_from_urls():
         with conn.cursor() as cur:
@@ -57,7 +53,6 @@ with psycopg2.connect(DATABASE_URL) as conn:
             urls_table = cur.fetchall()
 
         return urls_table
-
 
     def create_table_checks():
         with conn.cursor() as cur:
@@ -72,10 +67,10 @@ with psycopg2.connect(DATABASE_URL) as conn:
             created_at DATE);''')
             conn.commit()
 
-
     def select_from_check(url_id):
         with conn.cursor() as cur:
-            cur.execute("SELECT * FROM url_checks WHERE url_id = %s;", (url_id,))
+            cur.execute('''SELECT * FROM url_checks
+            WHERE url_id = %s;''', (url_id,))
             table_checks = cur.fetchall()
 
         return table_checks
@@ -83,6 +78,6 @@ with psycopg2.connect(DATABASE_URL) as conn:
     def add_check(url_id):
         created_at = date.today()
         with conn.cursor() as cur:
-            cur.execute('INSERT INTO url_checks (url_id, created_at) VALUES (%s, %s);',
-                        (url_id, created_at))
+            cur.execute('''INSERT INTO url_checks (url_id, created_at)
+            VALUES (%s, %s);''', (url_id, created_at))
             conn.commit()
