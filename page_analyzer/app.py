@@ -8,6 +8,7 @@ from page_analyzer.main import (create_table_urls,
                                 select_from_check, add_check)
 from dotenv import load_dotenv
 from validators.url import url
+import requests
 
 
 load_dotenv()
@@ -72,12 +73,16 @@ def urls_id(id):
     messages = get_flashed_messages(with_categories=True)
     site = find_site(id)
     checks_url = select_from_check(id)
+    print(checks_url)
     return render_template('urls_id.html', messages=messages,
                            site=site, checks_url=checks_url)
 
 
-@app.post('/urls/<id>/checks')
-def check(id):
-    add_check(id)
+@app.post('/urls/<url_id>/checks')
+def check(url_id):
+    site = find_site(url_id)
+    req = requests.get(site[1], auth=('user', 'pass'))
+    sk = req.status_code
+    add_check(url_id, sk)
     flash('Страница успешно проверена', 'success')
-    return redirect(f'/urls/{id}'), 302
+    return redirect(f'/urls/{url_id}'), 302

@@ -39,8 +39,8 @@
                                 <td>{{ site[0] }}</td>
                                 <td><a href="/urls/{{ site[0] }}">{{ site[1] }}</a></td>
                                 {% if select_from_check(site[0]) != [] %}
-                                    <td>{{ select_from_check(site[0])[-1][-1] }}</td>
-                                    <td></td>
+                                    <td>{{ select_from_check(site[0])[0][-1] }}</td>
+                                    <td>{{ select_from_check(site[0])[0][2] }}</td>
                                 {% endif %}
                                 {% if select_from_check(site[0]) == [] %}
                                     <td></td>
