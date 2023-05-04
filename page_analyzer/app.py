@@ -2,13 +2,14 @@ import os
 from flask import (Flask, url_for,
                    render_template, get_flashed_messages,
                    request, redirect, flash, session)
-from page_analyzer.main import (create_table_urls,
-                                add_site, find_id, find_site,
-                                select_from_urls, create_table_checks,
-                                select_from_check, add_check)
+from page_analyzer.logic_psql import (create_table_urls,
+                                      add_site, find_id, find_site,
+                                      select_from_urls, create_table_checks,
+                                      select_from_check, add_check)
 from dotenv import load_dotenv
 from validators.url import url
 import requests
+from bs4 import BeautifulSoup
 
 
 load_dotenv()
@@ -73,7 +74,6 @@ def urls_id(id):
     messages = get_flashed_messages(with_categories=True)
     site = find_site(id)
     checks_url = select_from_check(id)
-    print(checks_url)
     return render_template('urls_id.html', messages=messages,
                            site=site, checks_url=checks_url)
 
@@ -81,8 +81,23 @@ def urls_id(id):
 @app.post('/urls/<url_id>/checks')
 def check(url_id):
     site = find_site(url_id)
-    req = requests.get(site[1], auth=('user', 'pass'))
-    sk = req.status_code
-    add_check(url_id, sk)
+    response = requests.get(site[1])
+    sk = response.status_code
+    soup = BeautifulSoup(response.content, 'html.parser')
+    h1 = ''
+
+    if soup.h1:
+        h1 = soup.h1.text
+
+    title = ''
+    if soup.title:
+        title = soup.title.text
+
+    description = ''
+    for i in soup.find_all('meta'):
+        if i.get('name') == 'description':
+            description = i.get('content')
+
+    add_check(url_id, sk, h1, title, description)
     flash('Страница успешно проверена', 'success')
     return redirect(f'/urls/{url_id}'), 302
