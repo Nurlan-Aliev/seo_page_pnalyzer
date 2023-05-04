@@ -76,7 +76,7 @@ with psycopg2.connect(DATABASE_URL) as conn:
 
         return table_checks
 
-    def add_check(url_id, status_code, h1='', title='', description=''):
+    def add_check(url_id, status_code, h1, title, description):
         created_at = date.today()
         with conn.cursor() as cur:
             cur.execute('''INSERT INTO url_checks 
