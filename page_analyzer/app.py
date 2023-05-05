@@ -50,20 +50,19 @@ def post_urls():
         flash('Некорректный URL', 'error')
         return redirect(url_for('link'))
 
-    elif len(site) <= 255:
-        id = find_id(site)
-        if not id:
-            add_site(site)
-            flash('Страница успешно добавлена', 'success')
-            id = find_id(site)
-            return redirect(f'/urls/{id}')
-        else:
-            flash('Страница уже существует', 'info')
-            return redirect(f'/urls/{id}')
-
-    else:
+    if len(site) > 255:
         flash('URL превышает 255 символов', 'error')
         return redirect(url_for('link'))
+
+    id = find_id(site)
+    if not id:
+        add_site(site)
+        flash('Страница успешно добавлена', 'success')
+        id = find_id(site)
+        return redirect(f'/urls/{id}')
+    else:
+        flash('Страница уже существует', 'info')
+        return redirect(f'/urls/{id}')
 
 
 @app.route('/urls/<id>')
@@ -80,24 +79,30 @@ def urls_id(id):
 
 @app.post('/urls/<url_id>/checks')
 def check(url_id):
-    site = find_site(url_id)
-    response = requests.get(site[1])
-    sk = response.status_code
-    soup = BeautifulSoup(response.content, 'html.parser')
-    h1 = ''
+    try:
+        site = find_site(url_id)
+        response = requests.get(site[1])
+        sk = response.status_code
+        soup = BeautifulSoup(response.content, 'html.parser')
+        h1 = ''
 
-    if soup.h1:
-        h1 = soup.h1.text
+        if soup.h1:
+            h1 = soup.h1.text
 
-    title = ''
-    if soup.title:
-        title = soup.title.text
+        title = ''
+        if soup.title:
+            title = soup.title.text
 
-    description = ''
-    for i in soup.find_all('meta'):
-        if i.get('name') == 'description':
-            description = i.get('content')
+        description = ''
+        for i in soup.find_all('meta'):
+            if i.get('name') == 'description':
+                description = i.get('content')
 
-    add_check(url_id, sk, h1, title, description)
-    flash('Страница успешно проверена', 'success')
-    return redirect(f'/urls/{url_id}'), 302
+        add_check(url_id, sk, h1, title, description)
+        flash('Страница успешно проверена', 'success')
+
+        return redirect(f'/urls/{url_id}'), 302
+
+    except requests.exceptions.RequestException as e:
+        flash('Произошла ошибка при проверке', 'error')
+        return redirect(f'/urls/{url_id}'), 302

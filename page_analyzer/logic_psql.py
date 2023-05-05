@@ -11,9 +11,8 @@ load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 
-with psycopg2.connect(DATABASE_URL) as conn:
-
-    def create_table_urls():
+def create_table_urls():
+    with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute('DROP TABLE IF EXISTS urls;')
             cur.execute('''CREATE TABLE urls (
@@ -22,39 +21,49 @@ with psycopg2.connect(DATABASE_URL) as conn:
             created_at DATE);''')
             conn.commit()
 
-    def add_site(site):
-        normalize = urlparse(site)
-        home_page = f'{normalize.scheme}://{normalize.netloc}'
-        created_at = date.today()
+
+def add_site(site):
+    normalize = urlparse(site)
+    home_page = f'{normalize.scheme}://{normalize.netloc}'
+    created_at = date.today()
+    with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute('INSERT INTO urls (name, created_at) VALUES (%s, %s);',
                         (home_page, created_at))
             conn.commit()
 
-    def find_id(site):
-        normalize = urlparse(site)
-        home_page = f'{normalize.scheme}://{normalize.netloc}'
+
+def find_id(site):
+    normalize = urlparse(site)
+    home_page = f'{normalize.scheme}://{normalize.netloc}'
+    with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT id FROM urls WHERE name = %s;", (home_page,))
-            id = cur.fetchone()
-        if id:
-            return id[0]
-        return id
+            site_id = cur.fetchone()
+    if site_id:
+        return site_id[0]
+    return site_id
 
-    def find_site(id):
+
+def find_site(site_id):
+    with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT * FROM urls WHERE id = %s;", (id,))
+            cur.execute("SELECT * FROM urls WHERE id = %s;", (site_id,))
             site = cur.fetchone()
-        return site
+    return site
 
-    def select_from_urls():
+
+def select_from_urls():
+    with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM urls")
             urls_table = cur.fetchall()
 
-        return urls_table
+    return urls_table
 
-    def create_table_checks():
+
+def create_table_checks():
+    with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute('DROP TABLE IF EXISTS url_checks;')
             cur.execute('''CREATE TABLE url_checks (
@@ -67,17 +76,21 @@ with psycopg2.connect(DATABASE_URL) as conn:
             created_at DATE);''')
             conn.commit()
 
-    def select_from_check(url_id):
+
+def select_from_check(url_id):
+    with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute('''SELECT * FROM url_checks
             WHERE url_id = %s
             ORDER BY id DESC;''', (url_id,))
             table_checks = cur.fetchall()
 
-        return table_checks
+    return table_checks
 
-    def add_check(url_id, status_code, h1, title, description):
-        created_at = date.today()
+
+def add_check(url_id, status_code, h1, title, description):
+    created_at = date.today()
+    with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute('''INSERT INTO url_checks
             (url_id, status_code, h1, title, description, created_at)
