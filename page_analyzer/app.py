@@ -79,28 +79,28 @@ def urls_id(id):
 
 @app.post('/urls/<url_id>/checks')
 def check(url_id):
-    try:
-        site = find_site(url_id)
-        response = requests.get(site[1])
-        sk = response.status_code
-        soup = BeautifulSoup(response.content, 'html.parser')
+    # try:
+    site = find_site(url_id)
+    response = requests.get(site[1])
+    sk = response.status_code
+    soup = BeautifulSoup(response.content, 'html.parser')
 
-        h1 = ''
-        if soup.h1:
-            h1 = soup.h1.text
+    h1 = ''
+    if soup.h1:
+        h1 = soup.h1.text
 
-        title = soup.title.text
+    title = soup.title.text
 
-        description = ''
-        for i in soup.find_all('meta'):
-            if i.get('name') == 'description':
-                description = i.get('content')
+    description = ''
+    for i in soup.find_all('meta'):
+        if i.get('name') == 'description':
+            description = i.get('content')
 
-        add_check(url_id, sk, h1, title, description)
-        flash('Страница успешно проверена', 'success')
+    add_check(url_id, sk, h1, title, description)
+    flash('Страница успешно проверена', 'success')
 
-        return redirect(f'/urls/{url_id}'), 302
+    return redirect(f'/urls/{url_id}'), 302
 
-    except requests.exceptions.RequestException:
-        flash('Произошла ошибка при проверке', 'error')
-        return redirect(f'/urls/{url_id}'), 302
+    # except requests.exceptions.RequestException:
+    #     flash('Произошла ошибка при проверке', 'error')
+    #     return redirect(f'/urls/{url_id}'), 302
