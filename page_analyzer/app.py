@@ -84,14 +84,12 @@ def check(url_id):
         response = requests.get(site[1])
         sk = response.status_code
         soup = BeautifulSoup(response.content, 'html.parser')
-        h1 = ''
 
+        h1 = ''
         if soup.h1:
             h1 = soup.h1.text
 
-        title = ''
-        if soup.title:
-            title = soup.title.text
+        title = soup.title.text
 
         description = ''
         for i in soup.find_all('meta'):
@@ -103,6 +101,6 @@ def check(url_id):
 
         return redirect(f'/urls/{url_id}'), 302
 
-    except requests.exceptions.RequestException as e:
+    except requests.exceptions.RequestException:
         flash('Произошла ошибка при проверке', 'error')
         return redirect(f'/urls/{url_id}'), 302
