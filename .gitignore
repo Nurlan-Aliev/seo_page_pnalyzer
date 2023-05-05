@@ -5,3 +5,4 @@ __pycache__/
 .coverage
 coverage.xml
 .env
+psycopg2-2.9.6-cp310-cp310-linux_x86_64.whl
