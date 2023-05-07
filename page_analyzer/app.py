@@ -2,14 +2,14 @@ import os
 from flask import (Flask, url_for,
                    render_template, get_flashed_messages,
                    request, redirect, flash, session)
-from page_analyzer.logic_psql import (create_table_urls,
-                                      add_site, find_id, find_site,
-                                      select_from_urls, create_table_checks,
-                                      select_from_check, add_check)
+from page_analyzer.utils.logic_psql import (create_table_urls,
+                                            add_site, find_id, find_site,
+                                            select_from_urls, create_table_checks,
+                                            select_from_check, add_check)
 from dotenv import load_dotenv
 from validators.url import url
 import requests
-from bs4 import BeautifulSoup
+from utils.url import parse_url
 
 
 load_dotenv()
@@ -48,21 +48,21 @@ def post_urls():
 
     if not url(site):
         flash('Некорректный URL', 'error')
-        return redirect(url_for('link'))
+        return redirect(url_for('link')), 302
 
     if len(site) > 255:
         flash('URL превышает 255 символов', 'error')
-        return redirect(url_for('link'))
+        return redirect(url_for('link')), 302
 
-    id = find_id(site)
-    if not id:
+    site_id = find_id(site)
+    if not site_id:
         add_site(site)
         flash('Страница успешно добавлена', 'success')
-        id = find_id(site)
-        return redirect(f'/urls/{id}')
+        site_id = find_id(site)
+        return redirect(f'/urls/{site_id}'), 302
     else:
         flash('Страница уже существует', 'info')
-        return redirect(f'/urls/{id}')
+        return redirect(f'/urls/{site_id}'), 302
 
 
 @app.route('/urls/<id>')
@@ -83,18 +83,7 @@ def check(url_id):
         site = find_site(url_id)
         response = requests.get(site[1])
         sk = response.status_code
-        soup = BeautifulSoup(response.content, 'html.parser')
-
-        h1 = ''
-        if soup.h1:
-            h1 = soup.h1.text
-
-        title = soup.title.text
-
-        description = ''
-        for i in soup.find_all('meta'):
-            if i.get('name') == 'description':
-                description = i.get('content')
+        h1, title, description = parse_url(response)
 
         add_check(url_id, sk, h1, title, description)
         flash('Страница успешно проверена', 'success')
