@@ -4,12 +4,13 @@ from flask import (Flask, url_for,
                    request, redirect, flash, session)
 from page_analyzer.utils.logic_psql import (create_table_urls,
                                             add_site, find_id, find_site,
-                                            select_from_urls, create_table_checks,
+                                            select_from_urls,
+                                            create_table_checks,
                                             select_from_check, add_check)
 from dotenv import load_dotenv
 from validators.url import url
 import requests
-from utils.url import parse_url
+from page_analyzer.utils.url import parse_url
 
 
 load_dotenv()
@@ -20,8 +21,9 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['PERMANENT_SESSION_LIFETIME'] = 432000
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def link():
+
     if session.get('table') is None:
         create_table_urls()
         session['table'] = True
@@ -48,21 +50,23 @@ def post_urls():
 
     if not url(site):
         flash('Некорректный URL', 'error')
-        return redirect(url_for('link')), 302
+        messages = get_flashed_messages(with_categories=True)
+        return render_template('main_page.html', messages=messages), 422
 
     if len(site) > 255:
         flash('URL превышает 255 символов', 'error')
-        return redirect(url_for('link')), 302
+        messages = get_flashed_messages(with_categories=True)
+        return render_template('main_page.html', messages=messages), 422
 
     site_id = find_id(site)
     if not site_id:
         add_site(site)
         flash('Страница успешно добавлена', 'success')
         site_id = find_id(site)
-        return redirect(f'/urls/{site_id}'), 302
+        return redirect(url_for('urls_id', id=site_id)), 302
     else:
         flash('Страница уже существует', 'info')
-        return redirect(f'/urls/{site_id}'), 302
+        return redirect(url_for('urls_id', id=site_id)), 302
 
 
 @app.route('/urls/<id>')
@@ -82,14 +86,22 @@ def check(url_id):
     try:
         site = find_site(url_id)
         response = requests.get(site[1])
-        sk = response.status_code
+        sk = str(response.status_code)
         h1, title, description = parse_url(response)
 
         add_check(url_id, sk, h1, title, description)
         flash('Страница успешно проверена', 'success')
 
-        return redirect(f'/urls/{url_id}'), 302
+        return redirect(url_for('urls_id', id=url_id)), 302
 
-    except requests.exceptions.RequestException:
+    # except requests.exceptions.RequestException:
+    #     flash('Произошла ошибка при проверке', 'error')
+    #     return redirect(url_for('urls_id', id=url_id)), 302
+
+    except requests.exceptions.ConnectionError:
         flash('Произошла ошибка при проверке', 'error')
-        return redirect(f'/urls/{url_id}'), 302
+        return redirect(url_for('urls_id', id=url_id)), 302
+
+    except TimeoutError:
+        flash('Произошла ошибка при проверке', 'error')
+        return redirect(url_for('urls_id', id=url_id)), 302
