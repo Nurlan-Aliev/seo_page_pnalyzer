@@ -3,6 +3,7 @@ import os
 from datetime import date
 from urllib.parse import urlparse
 from dotenv import load_dotenv
+from page_analyzer.utils.url import parse_url
 
 
 load_dotenv()
@@ -88,7 +89,8 @@ def select_from_check(url_id):
     return table_checks
 
 
-def add_check(url_id, status_code, h1, title, description):
+def add_check(url_id, status_code, response):
+    h1, title, description = parse_url(response)
     created_at = date.today()
     with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:

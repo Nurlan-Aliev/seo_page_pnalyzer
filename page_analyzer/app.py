@@ -10,7 +10,7 @@ from page_analyzer.utils.logic_psql import (create_table_urls,
 from dotenv import load_dotenv
 from validators.url import url
 import requests
-from page_analyzer.utils.url import parse_url
+
 
 
 load_dotenv()
@@ -23,12 +23,8 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 432000
 
 @app.route('/', methods=['GET', 'POST'])
 def link():
-
-    if session.get('table') is None:
-        create_table_urls()
-        session['table'] = True
-    messages = get_flashed_messages(with_categories=True)
-    return render_template('main_page.html', messages=messages)
+    get_session(create_table_urls, 'table')
+    return render()
 
 
 @app.get('/urls')
@@ -47,16 +43,13 @@ def post_urls():
     site = request.form.get('url')
     if len(site) < 1:
         flash('URL обязателен', 'error')
-
     if not url(site):
         flash('Некорректный URL', 'error')
-        messages = get_flashed_messages(with_categories=True)
-        return render_template('main_page.html', messages=messages), 422
+        return render()
 
     if len(site) > 255:
         flash('URL превышает 255 символов', 'error')
-        messages = get_flashed_messages(with_categories=True)
-        return render_template('main_page.html', messages=messages), 422
+        return render()
 
     site_id = find_id(site)
     if not site_id:
@@ -69,11 +62,14 @@ def post_urls():
         return redirect(url_for('urls_id', id=site_id)), 302
 
 
+def render():
+    messages = get_flashed_messages(with_categories=True)
+    return render_template('main_page.html', messages=messages), 422
+
+
 @app.route('/urls/<id>')
 def urls_id(id):
-    if session.get('check') is None:
-        create_table_checks()
-        session['check'] = True
+    get_session(create_table_checks, 'check')
     messages = get_flashed_messages(with_categories=True)
     site = find_site(id)
     checks_url = select_from_check(id)
@@ -87,21 +83,18 @@ def check(url_id):
         site = find_site(url_id)
         response = requests.get(site[1])
         sk = str(response.status_code)
-        h1, title, description = parse_url(response)
 
-        add_check(url_id, sk, h1, title, description)
+        add_check(url_id, sk, response)
         flash('Страница успешно проверена', 'success')
 
         return redirect(url_for('urls_id', id=url_id)), 302
 
-    # except requests.exceptions.RequestException:
-    #     flash('Произошла ошибка при проверке', 'error')
-    #     return redirect(url_for('urls_id', id=url_id)), 302
-
     except requests.exceptions.ConnectionError:
-        flash('Произошла ошибка при проверке', 'error')
+        flash('ошибка', 'error')
         return redirect(url_for('urls_id', id=url_id)), 302
 
-    except TimeoutError:
-        flash('Произошла ошибка при проверке', 'error')
-        return redirect(url_for('urls_id', id=url_id)), 302
+
+def get_session(fun, arg):
+    if session.get(arg) is None:
+        fun()
+        session[arg] = True
