@@ -85,7 +85,7 @@ def check(url_id):
         add_check(url_id, sk, response)
         flash('Страница успешно проверена', 'success')
 
-        if sk > 499:
+        if sk > 399:
             flash('Произошла ошибка при проверке', 'error')
             return redirect(url_for('urls_id', url_id=url_id)), 302
 
