@@ -1,10 +1,12 @@
 [tool.poetry]
 name = "hexlet-code"
 version = "0.1.0"
-description = ""
+description = "Site that analyzes the specified pages for SEO suitability"
 authors = ["Aliev Nurlan <nualiev420@gmail.com>"]
 readme = "README.md"
 packages = [{include = "page_analyzer"}]
+repository = "https://github.com/Nurlan-Aliev/python-project-83"
+classifiers = ["Topic :: Internet :: Site Management :: Link Checking"]
 
 [tool.poetry.dependencies]
 python = "^3.10"

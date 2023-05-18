@@ -2,11 +2,7 @@ import os
 from flask import (Flask, url_for,
                    render_template, get_flashed_messages,
                    request, redirect, flash, session)
-from page_analyzer.utils.logic_psql import (create_table_urls,
-                                            add_site, find_id, find_site,
-                                            select_from_urls,
-                                            create_table_checks,
-                                            select_from_check, add_check)
+from page_analyzer import db
 from dotenv import load_dotenv
 from validators.url import url
 import requests
@@ -21,17 +17,17 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 432000
 
 
 @app.route('/')
-def link():
-    get_session(create_table_urls, 'table')
+def urls():
+    get_session(db.create_table_urls, 'table')
     return render(200)
 
 
 @app.get('/urls')
 def get_urls():
-    table = select_from_urls()
+    table = db.get_urls()
 
     context = {
-        'select_from_check': select_from_check
+        'select_from_check': db.get_check
     }
     return render_template('urls.html', table=table, **context)
 
@@ -50,11 +46,11 @@ def post_urls():
         flash('URL превышает 255 символов', 'error')
         return render(422)
 
-    site_id = find_id(site)
+    site_id = db.get_id(site)
     if not site_id:
-        add_site(site)
+        db.create_site(site)
         flash('Страница успешно добавлена', 'success')
-        site_id = find_id(site)
+        site_id = db.get_id(site)
         return redirect(url_for('urls_id', url_id=site_id)), 302
     else:
         flash('Страница уже существует', 'info')
@@ -63,15 +59,15 @@ def post_urls():
 
 def render(code):
     messages = get_flashed_messages(with_categories=True)
-    return render_template('main_page.html', messages=messages), code
+    return render_template('index.html', messages=messages), code
 
 
 @app.route('/urls/<url_id>')
 def urls_id(url_id):
-    get_session(create_table_checks, 'check')
+    get_session(db.create_table_checks, 'check')
     messages = get_flashed_messages(with_categories=True)
-    site = find_site(url_id)
-    checks_url = select_from_check(url_id)
+    site = db.get_site(url_id, )
+    checks_url = db.get_check(url_id, )
     return render_template('urls_id.html', messages=messages,
                            site=site, checks_url=checks_url)
 
@@ -79,10 +75,10 @@ def urls_id(url_id):
 @app.post('/urls/<url_id>/checks')
 def check(url_id):
     try:
-        site = find_site(url_id)
+        site = db.get_site(url_id, )
         response = requests.get(site[1])
         sk = response.status_code
-        add_check(url_id, sk, response)
+        db.create_check(url_id, sk, response, )
         flash('Страница успешно проверена', 'success')
 
         if sk > 399:
