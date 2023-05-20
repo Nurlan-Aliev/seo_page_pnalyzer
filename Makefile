@@ -12,4 +12,4 @@ install:
 	poetry install
 
 database:
-	psql project-82 < database.sql
+	psql railway < database.sql
