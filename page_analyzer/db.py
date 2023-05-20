@@ -66,7 +66,7 @@ def get_site(conn, site_id):
 
 @get_connect
 def get_urls(conn):
-    with conn.cursor() as cur:
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("SELECT * FROM urls")
         urls_table = cur.fetchall()
     return urls_table
@@ -91,14 +91,14 @@ def get_urls(conn):
 def get_check(conn, url_id):
     with conn.cursor(cursor_factory=RealDictCursor) as curs:
         curs.execute('''
-                   SELECT id, status_code, h1,
-                   title, description, DATE(created_at) as created_at, url_id
+                   SELECT id, url_id, status_code, h1,
+                   title, description, DATE(created_at) as created_at
                    FROM url_checks
                    WHERE url_checks.url_id = %s
                    ORDER BY id DESC''', (url_id,))
         check = curs.fetchall()
-        print(check)
     return check
+
 
 @get_connect
 def create_check(conn, url_id, status_code, response):

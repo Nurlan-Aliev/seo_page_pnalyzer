@@ -10,3 +10,12 @@ link:
 
 install:
 	poetry install
+
+database: 
+	db-create schema-load
+
+db-create:
+	createdb page_analyzer || echo 'skip'
+
+schema-load:
+	psql page_analyzer < database.sql

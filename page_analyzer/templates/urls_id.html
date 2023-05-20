@@ -1,78 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-    {% include 'title.html' %}
-    <body class="min-vh-100 d-flex flex-column">
-
-        {% include 'header.html' %}
-
-        {% if messages %}
-        {% for category, message in messages %}
-            {% if category == 'info' %}
-                <div class="alert alert-info" role="alert">{{ message }}</div>
-            {% endif %}
-            {% if category == 'success' %}
-                <div class="alert alert-success" role="alert">{{ message }}</div>
-            {% endif %}
-            {% if category == 'error' %}
-                <div class="alert alert-danger" role="alert">{{ message }}</div>
-            {% endif %}
-        {% endfor %}
-        {% endif %}
-        <main class="flex-grow-1">
-            <div class="container-lg mt-3">
-                <h1>Сайт: {{ site[1] }}</h1>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover text-nowrap" data-test="url">
-                        <tbody>
+{% extends "base.html" %}
+{% block main %}
+    <div class="container-lg mt-3">
+        <h1>Сайт: {{ site[1] }}</h1>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover text-nowrap" data-test="url">
+                <tbody>
+                    <tr>
+                      <th>ID</th>
+                      <td>{{ site[0] }}</td>
+                    </tr>
+                    <tr>
+                        <th>Имя</th>
+                        <td>{{ site[1] }}</td>
+                    </tr>
+                    <tr>
+                        <th>Дата создания</th>
+                        <td>{{ site[2] }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2 class="mt-5 mb-3">Проверки</h2>
+        <form action="/urls/{{ site[0] }}/checks" name='url' method="post">
+            <input type="submit" class="btn btn-primary" value="Запустить проверку">
+        </form>
+        <div>
+            <table class="table table-bordered table-hover mt-2" data-test="checks">
+                <tbody>
+                    <tr>
+                        <th>ID</th>
+                        <th>Код ответа</th>
+                        <th>h1</th>
+                        <th>title</th>
+                        <th>description</th>
+                        <th>Дата создания</th>
+                    </tr>
+                    {% if checks_url %}
+                        {% for check in checks_url %}
                             <tr>
-                              <th>ID</th>
-                              <td>{{ site[0] }}</td>
+                                <td>{{ check.id }}</td>
+                                <td>{{ check.status_code }}</td>
+                                <td>{{ check.h1 }}</td>
+                                <td>{{ check.title }}</td>
+                                <td>{{ check.description }}</td>
+                                <td>{{ check.created_at }}</td>
                             </tr>
-                            <tr>
-                                <th>Имя</th>
-                                <td>{{ site[1] }}</td>
-                            </tr>
-                            <tr>
-                                <th>Дата создания</th>
-                                <td>{{ site[2] }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <h2 class="mt-5 mb-3">Проверки</h2>
-                <form action="/urls/{{ site[0] }}/checks" name='url' method="post">
-                    <input type="submit" class="btn btn-primary" value="Запустить проверку">
-                </form>
-                <div>
-                    <table class="table table-bordered table-hover mt-2" data-test="checks">
-                        <tbody>
-                            <tr>
-                                <th>ID</th>
-                                <th>Код ответа</th>
-                                <th>h1</th>
-                                <th>title</th>
-                                <th>description</th>
-                                <th>Дата создания</th>
-                            </tr>
-                            {% if checks_url %}
-                                {% for check in checks_url %}
-                                    <tr>
-                                        <td>{{ check.id }}</td>
-                                        <td>{{ check.status_code }}</td>
-                                        <td>{{ check.h1 }}</td>
-                                        <td>{{ check.title }}</td>
-                                        <td>{{ check.description }}</td>
-                                        <td>{{ check.created_at }}</td>
-                                    </tr>
-                                {% endfor %}
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
-
-        {% include 'foot.html' %}
-
-    </body>
-</html>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

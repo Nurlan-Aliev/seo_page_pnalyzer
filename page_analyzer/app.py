@@ -1,7 +1,7 @@
 import os
 from flask import (Flask, url_for,
                    render_template, get_flashed_messages,
-                   request, redirect, flash, session)
+                   request, redirect, flash)
 from page_analyzer import db
 from dotenv import load_dotenv
 from validators.url import url
@@ -25,9 +25,8 @@ def urls():
 @app.get('/urls')
 def get_urls():
     table = db.get_urls()
-
     context = {
-        'select_from_check': db.get_check
+        'get_check': db.get_check
     }
     return render_template('urls.html', table=table, **context)
 
@@ -37,23 +36,23 @@ def post_urls():
 
     site = request.form.get('url')
     if len(site) < 1:
-        flash('URL обязателен', 'error')
+        flash('URL обязателен', 'alert-danger')
     if not url(site):
-        flash('Некорректный URL', 'error')
+        flash('Некорректный URL', 'alert-danger')
         return render(422)
 
     if len(site) > 255:
-        flash('URL превышает 255 символов', 'error')
+        flash('URL превышает 255 символов', 'alert-danger')
         return render(422)
 
     site_id = db.get_id(site)
     if not site_id:
         db.create_site(site)
-        flash('Страница успешно добавлена', 'success')
+        flash('Страница успешно добавлена', 'alert-success')
         site_id = db.get_id(site)
         return redirect(url_for('urls_id', url_id=site_id)), 302
     else:
-        flash('Страница уже существует', 'info')
+        flash('Страница уже существует', 'alert-info')
         return redirect(url_for('urls_id', url_id=site_id)), 302
 
 
@@ -79,16 +78,16 @@ def check(url_id):
         response = requests.get(site[1])
         sk = response.status_code
         db.create_check(url_id, sk, response, )
-        flash('Страница успешно проверена', 'success')
+        flash('Страница успешно проверена', 'alert-success')
 
         if sk > 399:
-            flash('Произошла ошибка при проверке', 'error')
+            flash('Произошла ошибка при проверке', 'alert-danger')
             return redirect(url_for('urls_id', url_id=url_id)), 302
 
         return redirect(url_for('urls_id', url_id=url_id)), 302
 
     except requests.exceptions.RequestException:
-        flash('Произошла ошибка при проверке', 'error')
+        flash('Произошла ошибка при проверке', 'alert-danger')
         return redirect(url_for('urls_id', url_id=url_id)), 302
 
 

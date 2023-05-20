@@ -8,8 +8,8 @@ def parse_url(response):
 
     title = soup.title.text if soup.title.text else ''
 
-    content = soup.find('meta', attrs={'name': 'description'}).get('content')
+    content = soup.find('meta', attrs={'name': 'description'})
 
-    description = content if content else ''
+    description = content.get('content') if content else ''
 
     return h1, title, description

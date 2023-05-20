@@ -1,45 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-    {% include 'title.html' %}
-    <body class="min-vh-100 d-flex flex-column">
+{% extends "base.html" %}
+{% block main %}
+    <div class="container-lg mt-3">
+        <h1>Сайты</h1>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover text-nowrap" data-test="urls">
+                <tbody>
+                    <tr>
+                        <th>ID</th>
+                        <th>Имя</th>
+                        <th>Последняя проверка</th>
+                        <th>Код ответа</th>
+                    </tr>
+                    {% for site in table %}
+                    <tr>
 
-        {% include 'header.html' %}
+                        <td>{{ site.id }}</td>
+                        <td><a href="/urls/{{ site.id }}">{{ site.name }}</a></td>
+                        {% if get_check(site.id) != [] %}
+                            <td>{{ get_check(site.id)[0].created_at }}</td>
+                            <td>{{ get_check(site.id)[0].status_code }}</td>
+                        {% endif %}
+                        {% if get_check(site.id) == [] %}
+                            <td></td>
+                            <td></td>
+                        {% endif %}
 
-        <main class="flex-grow-1">
-            <div class="container-lg mt-3">
-                <h1>Сайты</h1>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover text-nowrap" data-test="urls">
-                        <tbody>
-                            <tr>
-                                <th>ID</th>
-                                <th>Имя</th>
-                                <th>Последняя проверка</th>
-                                <th>Код ответа</th>
-                            </tr>
-                            {% for site in table %}
-                            <tr>
-
-                                <td>{{ site[0] }}</td>
-                                <td><a href="/urls/{{ site[0] }}">{{ site[1] }}</a></td>
-                                {% if select_from_check(site[0]) != [] %}
-                                    <td>{{ select_from_check(site[0])[0][-1] }}</td>
-                                    <td>{{ select_from_check(site[0])[0][2] }}</td>
-                                {% endif %}
-                                {% if select_from_check(site[0]) == [] %}
-                                    <td></td>
-                                    <td></td>
-                                {% endif %}
-
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
-
-        {% include 'foot.html' %}
-
-    </body>
-</html>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
