@@ -18,7 +18,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 432000
 
 @app.route('/')
 def urls():
-    get_session(db.create_table_urls, 'table')
+    # get_session(db.create_table_urls, 'table')
     return render(200)
 
 
@@ -64,7 +64,7 @@ def render(code):
 
 @app.route('/urls/<url_id>')
 def urls_id(url_id):
-    get_session(db.create_table_checks, 'check')
+    # get_session(db.create_table_checks, 'check')
     messages = get_flashed_messages(with_categories=True)
     site = db.get_site(url_id, )
     checks_url = db.get_check(url_id, )
@@ -92,7 +92,7 @@ def check(url_id):
         return redirect(url_for('urls_id', url_id=url_id)), 302
 
 
-def get_session(function, arg):
-    if session.get(arg) is None:
-        function()
-        session[arg] = True
+# def get_session(function, arg):
+#     if session.get(arg) is None:
+#         function()
+#         session[arg] = True
