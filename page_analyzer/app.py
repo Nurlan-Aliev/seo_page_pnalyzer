@@ -87,3 +87,8 @@ def check(url_id):
     except requests.exceptions.RequestException:
         flash('Произошла ошибка при проверке', 'alert-danger')
         return redirect(url_for('urls_id', url_id=url_id)), 302
+
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('error.html'), 404

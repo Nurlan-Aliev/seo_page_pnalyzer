@@ -11,5 +11,5 @@ link:
 install:
 	poetry install
 
-database:
-	psql railway < database.sql
+build:
+	psql project-82 < database.sql

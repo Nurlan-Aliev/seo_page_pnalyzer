@@ -1,3 +1,0 @@
-name: my-project
-version: 1
-buildCommand: make database
