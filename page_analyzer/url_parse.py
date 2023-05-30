@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 
 
 def parse_url(response):
@@ -13,3 +14,13 @@ def parse_url(response):
     description = content.get('content') if content else ''
 
     return h1, title, description
+
+
+def normalize_url(url: str) -> str:
+    """
+    Parse a URL
+    :return: scheme://netloc
+    """
+    normalize = urlparse(url)
+    home_page = f'{normalize.scheme}://{normalize.netloc}'
+    return home_page

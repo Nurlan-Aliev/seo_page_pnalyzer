@@ -14,13 +14,13 @@
                     {% for site in table %}
                     <tr>
 
-                        <td>{{ site.id }}</td>
-                        <td><a href="/urls/{{ site.id }}">{{ site.name }}</a></td>
-                        {% if get_check(site.id) != [] %}
-                            <td>{{ get_check(site.id)[0].created_at }}</td>
-                            <td>{{ get_check(site.id)[0].status_code }}</td>
+                        <td>{{ site.url_id }}</td>
+                        <td><a href="/urls/{{ site.url_id }}">{{ site.url_name }}</a></td>
+                        {% if site.get('sc') %}
+                            <td>{{ site.created_at }}</td>
+                            <td>{{ site.sc }}</td>
                         {% endif %}
-                        {% if get_check(site.id) == [] %}
+                        {% if not site.get('sc') %}
                             <td></td>
                             <td></td>
                         {% endif %}

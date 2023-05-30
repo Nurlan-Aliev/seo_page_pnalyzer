@@ -4,7 +4,8 @@ from flask import (Flask, url_for,
                    request, redirect, flash)
 from page_analyzer import db
 from dotenv import load_dotenv
-from validators.url import url
+from validators.url import url as validate
+from page_analyzer.utils import build_parts
 import requests
 
 
@@ -17,42 +18,53 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 432000
 
 
 @app.route('/')
-def urls():
+def index():
     return render(200)
 
 
 @app.get('/urls')
 def get_urls():
-    table = db.get_urls()
-    context = {
-        'get_check': db.get_check
-    }
-    return render_template('urls.html', table=table, **context)
+    conn = db.create_connection()
+    table = db.get_urls(conn)
+    result = []
+
+    for url in table:
+
+        url_id = url.get('id')
+        to_dick = {'url_id': url_id, 'url_name': url.get('name')}
+        check_url = db.get_check(conn, url_id)
+        dict_parts = build_parts(to_dick, check_url)
+        result.append(dict_parts)
+
+    db.close(conn)
+    return render_template('urls.html', table=result)
 
 
 @app.post('/urls')
 def post_urls():
 
-    site = request.form.get('url')
-    if len(site) < 1:
+    url = request.form.get('url')
+    if len(url) < 1:
         flash('URL обязателен', 'alert-danger')
-    if not url(site):
+    if not validate(url):
         flash('Некорректный URL', 'alert-danger')
         return render(422)
 
-    if len(site) > 255:
+    if len(url) > 255:
         flash('URL превышает 255 символов', 'alert-danger')
         return render(422)
-
-    site_id = db.get_id(site)
-    if not site_id:
-        db.create_site(site)
+    conn = db.create_connection()
+    url_id = db.get_id(conn, url)
+    if not url_id:
+        db.create_url(conn, url)
         flash('Страница успешно добавлена', 'alert-success')
-        site_id = db.get_id(site)
-        return redirect(url_for('urls_id', url_id=site_id)), 302
+        url_id = db.get_id(conn, url)
+        db.close(conn)
+        return redirect(url_for('urls_id', url_id=url_id)), 302
     else:
         flash('Страница уже существует', 'alert-info')
-        return redirect(url_for('urls_id', url_id=site_id)), 302
+        db.close(conn)
+        return redirect(url_for('urls_id', url_id=url_id)), 302
 
 
 def render(code):
@@ -60,22 +72,28 @@ def render(code):
     return render_template('index.html', messages=messages), code
 
 
-@app.route('/urls/<url_id>')
+@app.route('/urls/<int:url_id>')
 def urls_id(url_id):
+    conn = db.create_connection()
     messages = get_flashed_messages(with_categories=True)
-    site = db.get_site(url_id, )
-    checks_url = db.get_check(url_id, )
+    url = db.get_url(conn, url_id)
+    checks_url = db.get_check(conn, url_id)
+    db.close(conn)
     return render_template('urls_id.html', messages=messages,
-                           site=site, checks_url=checks_url)
+                           site=url, checks_url=checks_url)
 
 
-@app.post('/urls/<url_id>/checks')
+@app.post('/urls/<int:url_id>/checks')
 def check(url_id):
     try:
-        site = db.get_site(url_id, )
-        response = requests.get(site[1])
+        conn = db.create_connection()
+
+        url = db.get_url(conn, url_id)
+        id = url.get('name')
+        response = requests.get(id)
         sk = response.status_code
-        db.create_check(url_id, sk, response, )
+        db.create_check(conn, url_id, sk, response)
+        db.close(conn)
         flash('Страница успешно проверена', 'alert-success')
 
         if sk > 399:
@@ -91,4 +109,13 @@ def check(url_id):
 
 @app.errorhandler(404)
 def page_not_found(error):
-    return render_template('error.html'), 404
+    message = 'Error 404 Not Found'
+    title = 'Страница не найдена'
+    return render_template('error.html', title=title, message=message), 404
+
+
+@app.errorhandler(500)
+def server_error(error):
+    message = 'Error 500 Internal Server Error'
+    title = 'Ошибка сервера'
+    return render_template('error.html', title=title, message=message), 500

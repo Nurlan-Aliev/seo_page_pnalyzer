@@ -1,27 +1,27 @@
 {% extends "base.html" %}
 {% block main %}
     <div class="container-lg mt-3">
-        <h1>Сайт: {{ site[1] }}</h1>
+        <h1>Сайт: {{ site.name }}</h1>
         <div class="table-responsive">
             <table class="table table-bordered table-hover text-nowrap" data-test="url">
                 <tbody>
                     <tr>
                       <th>ID</th>
-                      <td>{{ site[0] }}</td>
+                      <td>{{ site.id }}</td>
                     </tr>
                     <tr>
                         <th>Имя</th>
-                        <td>{{ site[1] }}</td>
+                        <td>{{ site.name }}</td>
                     </tr>
                     <tr>
                         <th>Дата создания</th>
-                        <td>{{ site[2] }}</td>
+                        <td>{{ site.created_at }}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
         <h2 class="mt-5 mb-3">Проверки</h2>
-        <form action="/urls/{{ site[0] }}/checks" name='url' method="post">
+        <form action="/urls/{{ site.id }}/checks" name='url' method="post">
             <input type="submit" class="btn btn-primary" value="Запустить проверку">
         </form>
         <div>
