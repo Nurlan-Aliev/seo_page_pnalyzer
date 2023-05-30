@@ -3,5 +3,44 @@
 [![test_lint](https://github.com/Nurlan-Aliev/python-project-83/actions/workflows/check_test.yml/badge.svg)](https://github.com/Nurlan-Aliev/python-project-83/actions/workflows/check_test.yml)
 [![Maintainability](https://api.codeclimate.com/v1/badges/f1514b3a8b94fcde8711/maintainability)](https://codeclimate.com/github/Nurlan-Aliev/python-project-83/maintainability)
 
-# [Page Analyzer](https://python-project-83-production-6414.up.railway.app)
-A site that analyzes said pages for SEO suitability. 
+# [Page Analyzer]()
+
+## About
+Page analyzer is a simple web-application to get web-site base SEO characteristics.
+
+## How to run
+1. Clone this repository
+
+2. Install dependencies by poetry install
+    ```bash
+    poetry install
+    ```
+
+3. Create an env file with the following content
+    ```txt
+    DATABASE_URL = postgresql://your_name:password@localhost:PORT/your_db
+    SECRET_KEY = your_super_strong_and_cool_secret_key
+    ```
+4. Run this command to create tables in your DB
+   ```bash
+   psql your_db < database.sql
+   ```
+5. Run one of commands make dev or make start
+   ```bash
+   make dev
+   ```
+   ```bash
+   make start
+   ```
+
+## Build with:
+
+* Python
+* Flask
+* Bootstrap
+* Jinja2
+* Beautiful Soup
+* Requests
+* Pytest
+* PostgreSQL
+* Flake8

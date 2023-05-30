@@ -46,22 +46,31 @@ def post_urls():
     url = request.form.get('url')
     if len(url) < 1:
         flash('URL обязателен', 'alert-danger')
+
     if not validate(url):
+
         flash('Некорректный URL', 'alert-danger')
         return render(422)
 
     if len(url) > 255:
+
         flash('URL превышает 255 символов', 'alert-danger')
         return render(422)
+
     conn = db.create_connection()
     url_id = db.get_id(conn, url)
+
     if not url_id:
+
         db.create_url(conn, url)
         flash('Страница успешно добавлена', 'alert-success')
         url_id = db.get_id(conn, url)
         db.close(conn)
+
         return redirect(url_for('urls_id', url_id=url_id)), 302
+
     else:
+
         flash('Страница уже существует', 'alert-info')
         db.close(conn)
         return redirect(url_for('urls_id', url_id=url_id)), 302

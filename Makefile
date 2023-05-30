@@ -10,6 +10,3 @@ link:
 
 install:
 	poetry install
-
-build:
-	psql project-82 < database.sql
