@@ -1,7 +1,7 @@
 import os
 from flask import (Flask, url_for,
                    render_template, get_flashed_messages,
-                   request, redirect, flash)
+                   request, redirect, flash, abort)
 from page_analyzer import db
 from dotenv import load_dotenv
 from validators.url import url as validate
@@ -22,6 +22,11 @@ def index():
     return render(200)
 
 
+@app.route('/error_500')
+def er_500():
+    abort(500)
+
+
 @app.get('/urls')
 def get_urls():
     conn = db.create_connection()
@@ -31,9 +36,9 @@ def get_urls():
     for url in table:
 
         url_id = url.get('id')
-        to_dick = {'url_id': url_id, 'url_name': url.get('name')}
+        utl_info = {'url_id': url_id, 'url_name': url.get('name')}
         check_url = db.get_check(conn, url_id)
-        dict_parts = build_parts(to_dick, check_url)
+        dict_parts = build_parts(utl_info, check_url)
         result.append(dict_parts)
 
     db.close(conn)
@@ -98,8 +103,8 @@ def check(url_id):
         conn = db.create_connection()
 
         url = db.get_url(conn, url_id)
-        id = url.get('name')
-        response = requests.get(id)
+        name = url.get('name')
+        response = requests.get(name)
         sk = response.status_code
         db.create_check(conn, url_id, sk, response)
         db.close(conn)
@@ -116,15 +121,11 @@ def check(url_id):
         return redirect(url_for('urls_id', url_id=url_id)), 302
 
 
+@app.errorhandler(500)
 @app.errorhandler(404)
 def page_not_found(error):
-    message = 'Error 404 Not Found'
-    title = 'Страница не найдена'
-    return render_template('error.html', title=title, message=message), 404
-
-
-@app.errorhandler(500)
-def server_error(error):
-    message = 'Error 500 Internal Server Error'
-    title = 'Ошибка сервера'
-    return render_template('error.html', title=title, message=message), 500
+    code = error.code
+    message = error.description
+    title = error.name
+    return render_template('error.html', title=title,
+                           message=message, code=code), code
