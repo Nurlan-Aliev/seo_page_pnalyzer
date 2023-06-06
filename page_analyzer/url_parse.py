@@ -7,7 +7,7 @@ def parse_url(response):
 
     h1 = soup.h1.text if soup.h1 else ''
 
-    title = soup.title.text if soup.title.text else ''
+    title = soup.title.text if soup.title else ''
 
     content = soup.find('meta', attrs={'name': 'description'})
 
