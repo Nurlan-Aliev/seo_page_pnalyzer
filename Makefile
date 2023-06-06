@@ -10,3 +10,14 @@ link:
 
 install:
 	poetry install
+
+pytest:
+	psql test_page_analizer < database.sql
+	poetry run pytest
+
+create:
+	psql project-82 < database.sql
+
+test_cov:
+	psql test_page_analizer < database.sql
+	poetry run pytest --cov
