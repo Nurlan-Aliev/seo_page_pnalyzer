@@ -5,8 +5,11 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 
+load_dotenv()
+
+
 def create_connection():
-    load_dotenv()
+
     return psycopg2.connect(os.getenv('DATABASE_URL'))
 
 
@@ -62,7 +65,6 @@ def get_checks(conn, url_id) -> tuple:
 
 def create_check(conn, url_id: str, status_code: str, check: tuple):
 
-    h1, title, description = check
     created_at = datetime.now()
     with conn.cursor() as cur:
         cur.execute('''INSERT INTO url_checks

@@ -12,21 +12,22 @@ classifiers = ["Topic :: Internet :: Site Management :: Link Checking"]
 python = "^3.10"
 flask = "^2.2.3"
 validators = "^0.20.0"
+gunicorn = "^20.1.0"
 beautifulsoup4 = "^4.12.2"
 psycopg2-binary = "^2.9.6"
 requests = "^2.29.0"
+python-dotenv = "^1.0.0"
+
+
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^6.0.0"
+pytest = "^7.2.2"
 python-dotenv = "^1.0.0"
 flask-testing = "^0.8.1"
 pytest-postgresql = "^5.0.0"
 pook = "^1.1.1"
 pytest-cov = "^4.1.0"
-
-
-[tool.poetry.group.dev.dependencies]
-flake8 = "^6.0.0"
-gunicorn = "^20.1.0"
-pytest = "^7.2.2"
-python-dotenv = "^1.0.0"
 
 
 [build-system]
