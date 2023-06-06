@@ -14,7 +14,7 @@ def create_fake_connection():
     return psycopg2.connect(os.getenv('DATABASE_URL_TEST'))
 
 
-db.create_connection = create_fake_connection
+# db.create_connection = create_fake_connection
 
 
 @pytest.fixture

@@ -9,7 +9,6 @@ load_dotenv()
 
 
 def create_connection():
-
     return psycopg2.connect(os.getenv('DATABASE_URL'))
 
 
