@@ -1,17 +1,13 @@
 import psycopg2
-from psycopg2.extras import RealDictCursor
+from psycopg2.extras import NamedTupleCursor
 import os
 from datetime import datetime
 from dotenv import load_dotenv
-from page_analyzer.url_parse import parse_url, normalize_url
-
-
-load_dotenv()
-DATABASE_URL = os.getenv('DATABASE_URL')
 
 
 def create_connection():
-    return psycopg2.connect(DATABASE_URL)
+    load_dotenv()
+    return psycopg2.connect(os.getenv('DATABASE_URL'))
 
 
 def close(conn):
@@ -19,41 +15,41 @@ def close(conn):
 
 
 def create_url(conn, url: str):
-    home_page = normalize_url(url)
+
     created_at = datetime.now()
     with conn.cursor() as cur:
         cur.execute('INSERT INTO urls (name, created_at) VALUES (%s, %s);',
-                    (home_page, created_at))
+                    (url, created_at))
         conn.commit()
 
 
-def get_id(conn, url: str) -> str:
-    home_page = normalize_url(url)
-    with conn.cursor() as cur:
+def get_url_by_name(conn, home_page: str):
+
+    with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute("SELECT id FROM urls WHERE name = %s;", (home_page,))
         url_id = cur.fetchone()
     if url_id:
-        return url_id[0]
+        return url_id.id
     return url_id
 
 
 def get_url(conn, url_id: str) -> tuple:
-    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+    with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute("SELECT * FROM urls WHERE id = %s;", (url_id,))
         url = cur.fetchone()
     return url
 
 
 def get_urls(conn) -> list:
-    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+    with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute("SELECT * FROM urls")
-        urls_table = cur.fetchall()
+        urls = cur.fetchall()
 
-    return urls_table
+    return urls
 
 
-def get_check(conn, url_id) -> list:
-    with conn.cursor(cursor_factory=RealDictCursor) as curs:
+def get_checks(conn, url_id) -> tuple:
+    with conn.cursor(cursor_factory=NamedTupleCursor) as curs:
         curs.execute('''
                    SELECT id, url_id, status_code, h1,
                    title, description, DATE(created_at) as created_at
@@ -64,14 +60,13 @@ def get_check(conn, url_id) -> list:
     return check
 
 
-def create_check(conn, url_id: str, status_code: str, response: str):
+def create_check(conn, url_id: str, status_code: str, check: tuple):
 
-    h1, title, description = parse_url(response)
+    h1, title, description = check
     created_at = datetime.now()
     with conn.cursor() as cur:
         cur.execute('''INSERT INTO url_checks
         (url_id, status_code, h1, title, description, created_at)
         VALUES (%s, %s, %s, %s, %s, %s);''',
-                    (url_id, status_code, h1,
-                     title, description, created_at))
+                    (url_id, status_code, *check, created_at))
         conn.commit()
