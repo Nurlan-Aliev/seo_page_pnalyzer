@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  page_analyzer:
+    build: .
+    container_name: page_analyzer
+    command: make start
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://hello_flask:MySecretPassword@page_analyzer_pgdb:5432/page_analyzer_pgdb
+    volumes:
+      - .:/python-project-83
+    depends_on:
+      - page_analyzer_pgdb
+
+
+  page_analyzer_pgdb:
+    image: postgres
+    container_name: page_analyzer_pgdb
+    environment:
+      - POSTGRES_USER=hello_flask
+      - POSTGRES_PASSWORD=MySecretPassword
+      - POSTGRES_DB=page_analyzer_pgdb
+    ports:
+      - "5001:5432"

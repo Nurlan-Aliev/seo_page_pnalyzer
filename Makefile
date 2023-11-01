@@ -15,8 +15,8 @@ pytest:
 	psql test_page_analizer < database.sql
 	poetry run pytest
 
-create:
-	psql project-82 < database.sql
+build:
+	./build.sh
 
 test_cov:
 	psql test_page_analizer < database.sql

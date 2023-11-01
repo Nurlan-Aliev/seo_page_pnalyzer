@@ -2,7 +2,7 @@ import os
 from flask import (Flask, url_for,
                    render_template, get_flashed_messages,
                    request, redirect, flash, abort)
-from page_analyzer import db
+from page_analyzer import models
 from dotenv import load_dotenv
 from validators.url import url as validate
 import requests
@@ -28,8 +28,8 @@ def er_500():
 
 @app.get('/urls')
 def get_urls():
-    conn = db.create_connection()
-    urls = db.get_urls(conn)
+    conn = models.create_connection()
+    urls = models.get_urls(conn)
     result = []
 
     for url in urls:
@@ -37,14 +37,14 @@ def get_urls():
         url_id = url.id
         url_info = {'url_id': url_id, 'url_name': url.name}
 
-        check_url = db.get_checks(conn, url_id)
+        check_url = models.get_checks(conn, url_id)
         if check_url:
             url_info['sc'] = check_url[0].status_code
             url_info['created_at'] = check_url[0].created_at
 
         result.append(url_info)
 
-    db.close(conn)
+    models.close(conn)
     return render_template('urls.html', table=result)
 
 
@@ -64,21 +64,21 @@ def post_urls():
 
         flash('URL превышает 255 символов', 'alert-danger')
         return render(422)
-    conn = db.create_connection()
+    conn = models.create_connection()
     home_page = normalize_url(url)
 
-    url_id = db.get_url_by_name(conn, home_page)
+    url_id = models.get_url_by_name(conn, home_page)
     if not url_id:
-        db.create_url(conn, home_page)
+        models.create_url(conn, home_page)
         flash('Страница успешно добавлена', 'alert-success')
-        url_id = db.get_url_by_name(conn, home_page)
-        db.close(conn)
+        url_id = models.get_url_by_name(conn, home_page)
+        models.close(conn)
         return redirect(url_for('urls_id', url_id=url_id)), 302
 
     else:
 
         flash('Страница уже существует', 'alert-info')
-        db.close(conn)
+        models.close(conn)
         return redirect(url_for('urls_id', url_id=url_id)), 302
 
 
@@ -89,11 +89,11 @@ def render(code):
 
 @app.route('/urls/<int:url_id>')
 def urls_id(url_id):
-    conn = db.create_connection()
+    conn = models.create_connection()
     messages = get_flashed_messages(with_categories=True)
-    url = db.get_url(conn, url_id)
-    checks_url = db.get_checks(conn, url_id)
-    db.close(conn)
+    url = models.get_url(conn, url_id)
+    checks_url = models.get_checks(conn, url_id)
+    models.close(conn)
     return render_template('urls_id.html', messages=messages,
                            site=url, checks_url=checks_url)
 
@@ -101,9 +101,9 @@ def urls_id(url_id):
 @app.post('/urls/<int:url_id>/checks')
 def check(url_id):
     try:
-        conn = db.create_connection()
+        conn = models.create_connection()
 
-        url = db.get_url(conn, url_id)
+        url = models.get_url(conn, url_id)
         name = url.name
         response = requests.get(name)
         sc = response.status_code
@@ -113,8 +113,8 @@ def check(url_id):
             return redirect(url_for('urls_id', url_id=url_id)), 302
 
         check_url = parse_url(response)
-        db.create_check(conn, url_id, sc, check_url)
-        db.close(conn)
+        models.create_check(conn, url_id, sc, check_url)
+        models.close(conn)
         flash('Страница успешно проверена', 'alert-success')
 
         return redirect(url_for('urls_id', url_id=url_id)), 302

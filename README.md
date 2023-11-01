@@ -7,6 +7,24 @@
 
 ## About
 Page analyzer is a simple web-application to get web-site base SEO characteristics.
+The main page of the site is checked
+
+### Main page
+
+<img src="./utils/home_page.png"/>
+
+On the home page you can see:
+
+#### 1. Link to list of sites. 
+On this page you can find:
+* List of found websites. Clicking on the website name displays detailed information about the verification.
+* The date of the last website check.
+* Response code.
+#### 2. Search query.
+* The search bar accepts a link to the site in the form http://example.com
+#### 3. Check button
+If you type the link to the site correctly, when you click the button, you will be redirected to the verification information where you can complete the verification.
+
 
 ## How to run
 1. Clone this repository
