@@ -11,5 +11,3 @@ RUN poetry config virtualenvs.create false
 COPY database.sql ./page_analyzer
 
 RUN poetry install
-
-RUN ./build.sh
