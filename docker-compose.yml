@@ -7,8 +7,6 @@ services:
     command: make start
     ports:
       - "8000:8000"
-    environment:
-      - DATABASE_URL=postgres://postgres:postgres@page_analyzer_pgdb:5432/postgres
     volumes:
       - .:/python-project-83
     depends_on:
@@ -23,7 +21,6 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
     volumes:
-#      - ./pgdata:/var/lib/postgresql/data
       - ./database.sql:/docker-entrypoint-initdb.d/001.sql
     ports:
       - "5001:5432"
