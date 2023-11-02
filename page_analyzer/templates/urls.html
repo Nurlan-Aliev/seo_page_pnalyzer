@@ -14,14 +14,16 @@
                     {% for site in table %}
                     <tr>
 
-                        <td>{{ site.url_id }}</td>
-                        <td><a href="/urls/{{ site.url_id }}">{{ site.url_name }}</a></td>
-                        {% if site.get('sc') %}
-                            <td>{{ site.created_at }}</td>
-                            <td>{{ site.sc }}</td>
-                        {% endif %}
-                        {% if not site.get('sc') %}
+                        <td>{{ site.id }}</td>
+                        <td><a href="/urls/{{ site.id }}">{{ site.name }}</a></td>
+                        {% if site.created_at %}
+                            <td>{{ site.created_at}}</td>
+                        {% else %}
                             <td></td>
+                        {% endif %}
+                        {% if site.status_code %}
+                            <td>{{ site.status_code}}</td>
+                        {% else %}
                             <td></td>
                         {% endif %}
 

@@ -1,19 +1,5 @@
-import psycopg2
 from psycopg2.extras import NamedTupleCursor
-import os
 from datetime import datetime
-from dotenv import load_dotenv
-
-
-load_dotenv()
-
-
-def create_connection():
-    return psycopg2.connect(os.getenv('DATABASE_URL'))
-
-
-def close(conn):
-    conn.close()
 
 
 def create_url(conn, url: str):
@@ -22,10 +8,9 @@ def create_url(conn, url: str):
     with conn.cursor() as cur:
         cur.execute('INSERT INTO urls (name, created_at) VALUES (%s, %s);',
                     (url, created_at))
-        conn.commit()
 
 
-def get_url_by_name(conn, home_page: str):
+def is_url_exist(conn, home_page: str):
 
     with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute("SELECT id FROM urls WHERE name = %s;", (home_page,))
@@ -42,14 +27,6 @@ def get_url(conn, url_id: str) -> tuple:
     return url
 
 
-def get_urls(conn) -> list:
-    with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
-        cur.execute("SELECT * FROM urls")
-        urls = cur.fetchall()
-
-    return urls
-
-
 def get_checks(conn, url_id) -> tuple:
     with conn.cursor(cursor_factory=NamedTupleCursor) as curs:
         curs.execute('''
@@ -57,9 +34,23 @@ def get_checks(conn, url_id) -> tuple:
                    title, description, DATE(created_at) as created_at
                    FROM url_checks
                    WHERE url_checks.url_id = %s
-                   ORDER BY id DESC''', (url_id,))
+                   ORDER BY id DESC;''', (url_id,))
         check = curs.fetchall()
     return check
+
+
+def get_all_urls(conn):
+    with conn.cursor(cursor_factory=NamedTupleCursor)as curs:
+        curs.execute('''
+            SELECT urls.id, name, status_code, url_checks.created_at 
+                FROM urls LEFT JOIN (
+                    SELECT DISTINCT ON (url_id) url_id, status_code, url_checks.created_at
+                    FROM url_checks
+                    ORDER BY url_id, created_at DESC)
+                AS url_checks ON urls.id = url_checks.url_id
+            ORDER BY urls.id DESC;''')
+        urls = curs.fetchall()
+    return urls
 
 
 def create_check(conn, url_id: str, status_code: str, check: tuple):
@@ -70,4 +61,3 @@ def create_check(conn, url_id: str, status_code: str, check: tuple):
         (url_id, status_code, h1, title, description, created_at)
         VALUES (%s, %s, %s, %s, %s, %s);''',
                     (url_id, status_code, *check, created_at))
-        conn.commit()

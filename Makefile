@@ -12,7 +12,6 @@ install:
 	poetry install
 
 pytest:
-	psql test_page_analizer < database.sql
 	poetry run pytest
 
 build:

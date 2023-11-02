@@ -18,6 +18,7 @@ psycopg2-binary = "^2.9.6"
 requests = "^2.29.0"
 python-dotenv = "^1.0.0"
 pook = "^1.1.1"
+pytest-postgresql = "^5.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
